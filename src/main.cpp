@@ -57,7 +57,6 @@
 */
 
 #include <Arduino.h>
-#include <LedControl.h>
 #include <ESP8266WiFi.h>
 #include <Servo.h>
 #include <ArduinoJson.h>
@@ -66,21 +65,10 @@
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include "AsyncJson.h"
-
-// ESP Pin configurations
-
-#define LED_DIN D2
-#define LED_CS D1
-#define LED_CLK D3
-#define MOTOR_RIGHT_PIN D5
-#define MOTOR_LEFT_PIN D7
-#define SHUTTLE_SWITCH_PIN D6
-#define SHUTTLE_RETAINER_PIN D8
-//In case you want to use the EXT pin header for your Retainer servo motor, comment the line above and uncomment the line just below 
-// #define SHUTTLE_RETAINER_PIN D0 
-#define ANALOG_READ_BATTERY A0
-
-// ESP Pin configurations end
+#include "constants.h"
+#include "params.h"
+#include "utils.h"
+#include "ledDisplay.h"
 
 int baddy_firmware_version = 01;
 
@@ -187,54 +175,6 @@ void reset_stats_counter()
 }
 
 /////////////////////////////Statistics counter END//////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////CONFIGURATION PARAMETERS - FACTORY SETTINGS //////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////
-
-//Warm up, break timer, stop speed, computation timer - modify only if you know what you are doing
-int WARM_UP_SPEED=890;
-int TRANSITION_SPEED=875;
-int TRANSITION_SPEED_HIGH = 990;
-int STOP = 750;
-int WARM_UP_TIMER = 2000;
-int COMPUTATION_TIMER = 600;
-int BREAK_TIMER = 500;
-int BUDDY_TIMER = 1000; // Timer to synchronize BADDY and BUDDY
-
-// DROP SHOTS
-int DROP_LEFT_SHOT_LEFT_MOTOR=910;//950;
-int DROP_LEFT_SHOT_RIGHT_MOTOR=843;//860;
-int DROP_CENTER_SHOT_LEFT_MOTOR=845;//880;
-int DROP_CENTER_SHOT_RIGHT_MOTOR=845;//880;
-int DROP_RIGHT_SHOT_LEFT_MOTOR=840;//860;
-int DROP_RIGHT_SHOT_RIGHT_MOTOR=910;//950;
-//DRIVE SHOTS
-int DRIVE_LEFT_SHOT_LEFT_MOTOR=1050;
-int DRIVE_LEFT_SHOT_RIGHT_MOTOR=875;
-int DRIVE_CENTER_SHOT_LEFT_MOTOR=990;
-int DRIVE_CENTER_SHOT_RIGHT_MOTOR=990;
-int DRIVE_RIGHT_SHOT_LEFT_MOTOR=875;
-int DRIVE_RIGHT_SHOT_RIGHT_MOTOR=1050;
-//CLEAR SHOTS
-int CLEAR_LEFT_SHOT_LEFT_MOTOR=1300;
-int CLEAR_LEFT_SHOT_RIGHT_MOTOR=930;
-int CLEAR_CENTER_SHOT_LEFT_MOTOR=1350;
-int CLEAR_CENTER_SHOT_RIGHT_MOTOR=1350;
-int CLEAR_RIGHT_SHOT_LEFT_MOTOR=930;
-int CLEAR_RIGHT_SHOT_RIGHT_MOTOR=1300;
-
-//Switch movement and timers
-int SWITCH_LONG_POSITION = 75;
-int SWITCH_SHORT_POSITION = 140;
-int SWITCH_WAIT_POSITION = 90;
-int SWITCH_TIMER = 300;//320 // value in millisecond to wait Switch to fetch its long position
-int SWITCH_SPEED=600; // Special speed for slow motion movement (configuration)
-
-// Shuttle retainer movemement and timers
-int RETAINER_UP_POSITION = 115;
-int RETAINER_DOWN_POSITION = 158;
-int RETAINER_TIMER = 160;//150
 
 // Use at Json config object creation
 int SpeedProfileInit[18] =      {DROP_LEFT_SHOT_LEFT_MOTOR, DROP_LEFT_SHOT_RIGHT_MOTOR, DROP_CENTER_SHOT_LEFT_MOTOR, DROP_CENTER_SHOT_RIGHT_MOTOR, DROP_RIGHT_SHOT_LEFT_MOTOR, DROP_RIGHT_SHOT_RIGHT_MOTOR, DRIVE_LEFT_SHOT_LEFT_MOTOR, DRIVE_LEFT_SHOT_RIGHT_MOTOR, DRIVE_CENTER_SHOT_LEFT_MOTOR, DRIVE_CENTER_SHOT_RIGHT_MOTOR, DRIVE_RIGHT_SHOT_LEFT_MOTOR, DRIVE_RIGHT_SHOT_RIGHT_MOTOR, CLEAR_LEFT_SHOT_LEFT_MOTOR, CLEAR_LEFT_SHOT_RIGHT_MOTOR, CLEAR_CENTER_SHOT_LEFT_MOTOR, CLEAR_CENTER_SHOT_RIGHT_MOTOR, CLEAR_RIGHT_SHOT_LEFT_MOTOR, CLEAR_RIGHT_SHOT_RIGHT_MOTOR};
@@ -971,60 +911,6 @@ bool LoadConfig (int Mode){
 /////////////////////////////CONFIGURATION PARAMETERS END /////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
 
-
-
-///////////////////////////////////////////////////////////////////////////////
-//////////////////// OTHER FUNCTIONS DECLARATION///////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-String urlencode(String str)
-{
-    String encodedString="";
-    char c;
-    char code0;
-    char code1;
-    char code2;
-    for (int i =0; i < str.length(); i++){
-      c=str.charAt(i);
-      if (c == ' '){
-        encodedString+= '+';
-      } else if (isalnum(c)){
-        encodedString+=c;
-      } else{
-        code1=(c & 0xf)+'0';
-        if ((c & 0xf) >9){
-            code1=(c & 0xf) - 10 + 'A';
-        }
-        c=(c>>4)&0xf;
-        code0=c+'0';
-        if (c > 9){
-            code0=c - 10 + 'A';
-        }
-        code2='\0';
-        encodedString+='%';
-        encodedString+=code0;
-        encodedString+=code1;
-        //encodedString+=code2;
-      }
-      yield();
-    }
-    return encodedString;
-
-}
-
-unsigned char h2int(char c){
-    if (c >= '0' && c <='9'){
-        return((unsigned char)c - '0');
-    }
-    if (c >= 'a' && c <='f'){
-        return((unsigned char)c - 'a' + 10);
-    }
-    if (c >= 'A' && c <='F'){
-        return((unsigned char)c - 'A' + 10);
-    }
-    return(0);
-}
-
 void buddy_send_abort ()
 {
 
@@ -1141,118 +1027,6 @@ void update_status()
 
 
 }
-
-// Led management instances and objects
-
-int refresh_period_square = 100;
-int refresh_period_level = 40;
-int refresh_period_smiley = 1000;
-
-byte level8[8]=     {B11111111,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000};
-byte level7[8]=     {B11111111,B11111111,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000};
-byte level6[8]=     {B11111111,B11111111,B11111111,B00000000,B00000000,B00000000,B00000000,B00000000};
-byte level5[8]=     {B11111111,B11111111,B11111111,B11111111,B00000000,B00000000,B00000000,B00000000};
-byte level4[8]=     {B11111111,B11111111,B11111111,B11111111,B11111111,B00000000,B00000000,B00000000};
-byte level3[8]=     {B11111111,B11111111,B11111111,B11111111,B11111111,B11111111,B00000000,B00000000};
-byte level2[8]=     {B11111111,B11111111,B11111111,B11111111,B11111111,B11111111,B11111111,B00000000};
-byte level1[8]=     {B11111111,B11111111,B11111111,B11111111,B11111111,B11111111,B11111111,B11111111};
-
-byte square1[8]=     {B00000000,B00000000,B00000000,B00011000,B00011000,B00000000,B00000000,B00000000};
-byte square2[8]=     {B00000000,B00000000,B00111100,B00100100,B00100100,B00111100,B00000000,B00000000};
-byte square3[8]=     {B00000000,B01111110,B01000010,B01000010,B01000010,B01000010,B01111110,B00000000};
-byte square4[8]=     {B11111111,B10000001,B10000001,B10000001,B10000001,B10000001,B10000001,B11111111};
-
-byte smile[8]=   {B00010000,B00100110,B01000110,B01000000,B01000000,B01000110,B00100110,B00010000};
-byte frown[8]=   {B01000000,B00100110,B00010110,B00010000,B00010000,B00010110,B00100110,B01000000};
-
-
-LedControl lc=LedControl(LED_DIN,LED_CLK,LED_CS,0);
-
-// Led management instances end
-
-// Functions for Led display
-//Functions for LED forms display
-
-void printByte(byte character [])
-{
-  int i = 0;
-  for(i=0;i<8;i++)
-  {
-    lc.setRow(0,i,character[i]);
-  }
-}
-
-void printLevels()
-{
-    printByte(level8);
-    delay(refresh_period_level);
-    printByte(level7);
-    delay(refresh_period_level);
-    printByte(level6);
-    delay(refresh_period_level);
-    printByte(level5);
-    delay(refresh_period_level);
-    printByte(level4);
-    delay(refresh_period_level);
-    printByte(level3);
-    delay(refresh_period_level);
-    printByte(level2);
-    delay(refresh_period_level);
-    printByte(level1);
-    delay(refresh_period_level);
-    printByte(level2);
-    delay(refresh_period_level);
-    printByte(level3);
-    delay(refresh_period_level);
-    printByte(level4);
-    delay(refresh_period_level);
-    printByte(level5);
-    delay(refresh_period_level);
-    printByte(level6);
-    delay(refresh_period_level);
-    printByte(level7);
-    delay(refresh_period_level);
-    printByte(level8);
-    delay(refresh_period_level);
-    lc.clearDisplay(0);         // clear the display
-}
-
-void printSquares(){
-
-    printByte(square1);
-    delay(refresh_period_square);
-    printByte(square2);
-    delay(refresh_period_square);
-    printByte(square3);
-    delay(refresh_period_square);
-    printByte(square4);
-    delay(refresh_period_square);
-    printByte(square3);
-    delay(refresh_period_square);
-    printByte(square2);
-    delay(refresh_period_square);
-    printByte(square1);
-    delay(refresh_period_square);
-    lc.clearDisplay(0);         // clear the display
-
-}
-
-void printSmiley(){
-
-    printByte(smile);
-    delay(refresh_period_smiley);
-    lc.clearDisplay(0);         // clear the display
-
-}
-
-void printFrown(){
-
-    printByte(frown);
-    delay(refresh_period_smiley);
-    lc.clearDisplay(0);         // and clear the display
-
-}
-// End of functions for Led display
 
 int set_stroke(int stroke)
 {
@@ -3151,16 +2925,7 @@ void setup() {
 
     //Wifi network config end
 
-    // Led display Set up
-
-    // Led set up and ready for pairing
-    lc.shutdown(0,false);       //The MAX72XX is in power-saving mode on startup
-    lc.setIntensity(0,2);      // Set the brightness to average value
-    lc.clearDisplay(0);         // and clear the display
-    printLevels();
-    lc.clearDisplay(0);         // and clear the display
-
-    // Led display set up end
+    ledSetup();
 
     battery_level = analogRead(ANALOG_READ_BATTERY);
     Serial.print("Battery Level:");
