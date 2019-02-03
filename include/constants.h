@@ -14,4 +14,6 @@
 #define ANALOG_READ_BATTERY A0
 
 // ESP Pin configurations end
+
+#define BADDY_CONFIG_FILENAME "/BADDY_CONFIG_FILE"
 #endif // _BADDY_CONSTANTS_H

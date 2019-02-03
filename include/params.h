@@ -6,47 +6,56 @@
 ///////////////////////////////////////////////////////////////////////////////////
 
 //Warm up, break timer, stop speed, computation timer - modify only if you know what you are doing
-int WARM_UP_SPEED=890;
-int TRANSITION_SPEED=875;
-int TRANSITION_SPEED_HIGH = 990;
-int STOP = 750;
-int WARM_UP_TIMER = 2000;
-int COMPUTATION_TIMER = 600;
-int BREAK_TIMER = 500;
-int BUDDY_TIMER = 1000; // Timer to synchronize BADDY and BUDDY
+extern int WARM_UP_SPEED;
+extern int TRANSITION_SPEED;
+extern int TRANSITION_SPEED_HIGH;
+extern int STOP;
+extern int WARM_UP_TIMER;
+extern int COMPUTATION_TIMER;
+extern int BREAK_TIMER;
+extern int BUDDY_TIMER; // Timer to synchronize BADDY and BUDDY
 
 // DROP SHOTS
-int DROP_LEFT_SHOT_LEFT_MOTOR=910;//950;
-int DROP_LEFT_SHOT_RIGHT_MOTOR=843;//860;
-int DROP_CENTER_SHOT_LEFT_MOTOR=845;//880;
-int DROP_CENTER_SHOT_RIGHT_MOTOR=845;//880;
-int DROP_RIGHT_SHOT_LEFT_MOTOR=840;//860;
-int DROP_RIGHT_SHOT_RIGHT_MOTOR=910;//950;
+extern int DROP_LEFT_SHOT_LEFT_MOTOR;//950;
+extern int DROP_LEFT_SHOT_RIGHT_MOTOR;//860;
+extern int DROP_CENTER_SHOT_LEFT_MOTOR;//880;
+extern int DROP_CENTER_SHOT_RIGHT_MOTOR;//880;
+extern int DROP_RIGHT_SHOT_LEFT_MOTOR;//860;
+extern int DROP_RIGHT_SHOT_RIGHT_MOTOR;//950;
 //DRIVE SHOTS
-int DRIVE_LEFT_SHOT_LEFT_MOTOR=1050;
-int DRIVE_LEFT_SHOT_RIGHT_MOTOR=875;
-int DRIVE_CENTER_SHOT_LEFT_MOTOR=990;
-int DRIVE_CENTER_SHOT_RIGHT_MOTOR=990;
-int DRIVE_RIGHT_SHOT_LEFT_MOTOR=875;
-int DRIVE_RIGHT_SHOT_RIGHT_MOTOR=1050;
+extern int DRIVE_LEFT_SHOT_LEFT_MOTOR;
+extern int DRIVE_LEFT_SHOT_RIGHT_MOTOR;
+extern int DRIVE_CENTER_SHOT_LEFT_MOTOR;
+extern int DRIVE_CENTER_SHOT_RIGHT_MOTOR;
+extern int DRIVE_RIGHT_SHOT_LEFT_MOTOR;
+extern int DRIVE_RIGHT_SHOT_RIGHT_MOTOR;
 //CLEAR SHOTS
-int CLEAR_LEFT_SHOT_LEFT_MOTOR=1300;
-int CLEAR_LEFT_SHOT_RIGHT_MOTOR=930;
-int CLEAR_CENTER_SHOT_LEFT_MOTOR=1350;
-int CLEAR_CENTER_SHOT_RIGHT_MOTOR=1350;
-int CLEAR_RIGHT_SHOT_LEFT_MOTOR=930;
-int CLEAR_RIGHT_SHOT_RIGHT_MOTOR=1300;
+extern int CLEAR_LEFT_SHOT_LEFT_MOTOR;
+extern int CLEAR_LEFT_SHOT_RIGHT_MOTOR;
+extern int CLEAR_CENTER_SHOT_LEFT_MOTOR;
+extern int CLEAR_CENTER_SHOT_RIGHT_MOTOR;
+extern int CLEAR_RIGHT_SHOT_LEFT_MOTOR;
+extern int CLEAR_RIGHT_SHOT_RIGHT_MOTOR;
 
 //Switch movement and timers
-int SWITCH_LONG_POSITION = 75;
-int SWITCH_SHORT_POSITION = 140;
-int SWITCH_WAIT_POSITION = 90;
-int SWITCH_TIMER = 300;//320 // value in millisecond to wait Switch to fetch its long position
-int SWITCH_SPEED=600; // Special speed for slow motion movement (configuration)
+extern int SWITCH_LONG_POSITION;
+extern int SWITCH_SHORT_POSITION;
+extern int SWITCH_WAIT_POSITION;
+extern int SWITCH_TIMER;//320 // value in millisecond to wait Switch to fetch its long position
+extern int SWITCH_SPEED; // Special speed for slow motion movement (configuration)
 
 // Shuttle retainer movemement and timers
-int RETAINER_UP_POSITION = 115;
-int RETAINER_DOWN_POSITION = 158;
-int RETAINER_TIMER = 160;//150
+extern int RETAINER_UP_POSITION;
+extern int RETAINER_DOWN_POSITION;
+extern int RETAINER_TIMER;//150
+
+//Wifi related static values for BADDY as a server
+extern const char *BADDY_ID;
+extern const char *ssid;
+extern const char *ssid_buddy;
+
+//const char *ssid = "BADDY-WIFI-TEST";
+
+extern const char *password;
 
 #endif // _BADDY_PARAMS_H
